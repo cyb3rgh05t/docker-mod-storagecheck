@@ -1,0 +1,46 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+#####################################
+# All rights reserved.              #
+# started from Zero                 #
+# Docker owned dockserver           #
+# Docker Maintainer dockserver      #
+#####################################
+# THIS DOCKER IS UNDER LICENSE      #
+# NO CUSTOMIZING IS ALLOWED         #
+# NO REBRANDING IS ALLOWED          #
+# NO CODE MIRRORING IS ALLOWED      #
+#####################################
+
+STORAGECHECK="/mnt/unionfs/.storagecheck/test"
+STORAGECHECK2="/mnt/unionfs/.storagecheck/test2"
+APP="${HOSTNAME^}"
+
+function log() {
+   GRAY="\033[0;37m"
+   BLUE="\033[0;34m"
+   NC="\033[0m"
+   $(which echo) -e "${GRAY}[$($(which date) +'%Y/%m/%d %H:%M:%S')]${BLUE} [${APP}]${NC} ${1}"
+}
+
+while true; do
+   if [[ ! -f "${STORAGECHECK}" || ! -f "${STORAGECHECK2}" ]]; then
+      log "-> One or more Storage Mounts offline! | Stopping ${APP} ... <-"
+      mapfile -t SERVICES < <($(which ls) /var/run/service/ | $(which grep) -Ewiv "s6-linux-init-shutdownd|s6rc-fdholder|s6rc-oneshot-runner|svc-cron|svc-mod-universal-storagecheck")
+      for SERVICE in "${SERVICES[@]}"; do
+         s6-svc -d /var/run/service/${SERVICE}
+      done
+
+      while [[ ! -f "${STORAGECHECK}" || ! -f "${STORAGECHECK2}" ]]; do
+         log "-> Waiting for Storage Mounts ... <-"
+         sleep 30
+      done
+
+      for SERVICE in "${SERVICES[@]}"; do
+         s6-svc -u /var/run/service/${SERVICE}
+      done
+
+      log "-> Storage Mounts online again! | Starting ${APP} ... <-"
+   fi
+   $(which sleep) 120
+done

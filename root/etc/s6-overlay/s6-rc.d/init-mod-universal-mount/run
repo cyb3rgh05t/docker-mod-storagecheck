@@ -1,0 +1,32 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+#####################################
+# All rights reserved.              #
+# started from Zero                 #
+# Docker owned dockserver           #
+# Docker Maintainer dockserver      #
+#####################################
+# THIS DOCKER IS UNDER LICENSE      #
+# NO CUSTOMIZING IS ALLOWED         #
+# NO REBRANDING IS ALLOWED          #
+# NO CODE MIRRORING IS ALLOWED      #
+#####################################
+
+STORAGECHECK="/mnt/unionfs/.storagecheck/test"
+STORAGECHECK2="/mnt/unionfs/.storagecheck/test2"
+APP="${HOSTNAME^}"
+
+function log() {
+   GRAY="\033[0;37m"
+   BLUE="\033[0;34m"
+   NC="\033[0m"
+   $(which echo) -e "${GRAY}[$($(which date) +'%Y/%m/%d %H:%M:%S')]${BLUE} [${APP}]${NC} ${1}"
+}
+
+log "-> Checking for Storage Mounts ... <-"
+
+while [[ ! -f "${STORAGECHECK}" || ! -f "${STORAGECHECK2}" ]]; do
+   log "-> Waiting for Storage Mounts ... <-" && sleep 10
+done
+
+log "-> Storage Mounts online ! | Starting ${APP} ... <-"
