@@ -1,4 +1,4 @@
-name: Release StorageCheck Docker
+name: Release Storage-Check MOD
 
 on:
   release:
